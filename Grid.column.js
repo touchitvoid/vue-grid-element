@@ -1,54 +1,60 @@
 
-var pick=require('lodash/pick')
+var pick = require('lodash/pick')
 
-const isNotIn=(obj,v,key)=>v&&(obj[key]=v)
+const isNotIn = (obj, v, key) => v && (obj[key] = v)
 
 import pluginHelper from './Grid.column.plugin.js'
 
 
 export default {
-    name:'GridColumn',
-    render(h){
-        var me=this;
-        function renderChild(column){
+    name: 'GridColumn',
+    render(h) {
+        var me = this;
+        function renderChild(column) {
 
-            var ps={attrs:{}};
-            var {header,dataIndex,width,formatter,children,type,pk,slot}=pluginHelper(column,h);
-            ps.attrs.key=dataIndex||(pk+type);
-            isNotIn(ps.attrs,header,'label')
-            isNotIn(ps.attrs,dataIndex,'prop')
-            isNotIn(ps.attrs,width,'width')
-            isNotIn(ps.attrs,formatter,'formatter')
+            var ps = { attrs: {} };
+            var { header, dataIndex, width, formatter, children, type, pk, slot, ...others } = pluginHelper(column, h);
+            ps.attrs.key = dataIndex || (pk + type);
+            Object.assign(ps.attrs, others)
 
-            if(slot){
+            isNotIn(ps.attrs, header, 'label')
+            isNotIn(ps.attrs, dataIndex, 'prop')
+            isNotIn(ps.attrs, width, 'width')
+            isNotIn(ps.attrs, formatter, 'formatter')
+
+
+            if (slot) {
                 //搞定
-                ps.scopedSlots={default:({row})=>slot({row,column})}
+                ps.scopedSlots = { default: ({ row }) => slot({ row, column }) }
             }
-            
-            if(column.children){
-                ps.attrs.headerAlign="center";
+            else if (type) {
+                ps.attrs.type = type;
+            }
+
+            if (column.children) {
+                ps.attrs.headerAlign = "center";
                 return <el-table-column {...ps}>
                     {
-                        column.children.map((child,index)=>{
+                        column.children.map((child, index) => {
                             return renderChild(child)
                         })
                     }
                 </el-table-column>
             }
-            else{
-                return <el-table-column 
-                {...ps}>
+            else {
+                return <el-table-column
+                    {...ps}>
                 </el-table-column>
             }
         }
 
-        if(this.column)    
+        if (this.column)
             return renderChild(this.column);
     },
-    props:{
-        column:null,
-        pk:{
-            type:String,
+    props: {
+        column: null,
+        pk: {
+            type: String,
         }
     },
 }
